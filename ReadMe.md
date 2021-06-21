@@ -1,4 +1,6 @@
-﻿# TranslateCSV
+﻿# !!!! This is "under construction" and not finished yet !!!!
+
+# TranslateCSV
 
 A command line program to translate the CSV files from Empyrion or a scenario.
 
