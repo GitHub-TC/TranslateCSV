@@ -25,5 +25,5 @@ For this an access is needed which can be requested at https://www.deepl.com/pro
 | --version                 | Display version information.
 
 ```
-TranslateCSV.exe --csv-input "C:\steamcmd\empyrion.server\Content\Scenarios\Reforged Eden\Extras\PDA\PDA.csv" --csv-output "C:\steamcmd\empyrion.server\Content\Scenarios\Reforged Eden\Extras\PDA\PDA-out.csv" --deepl-target-language DE --csv-target-language Deutsch
+TranslateCSV.exe --csv-input "C:\steamcmd\empyrion.server\Content\Scenarios\Reforged Eden\Extras\PDA\PDA.csv" --deepl-target-language DE --csv-target-language Deutsch
 ```
