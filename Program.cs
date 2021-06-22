@@ -1,7 +1,9 @@
 ﻿using CommandLine;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -61,10 +63,17 @@ namespace TranslateCSV
 
             var deepLTranslate = new DeepLTranslate(options.MaxParallelDeepLCalls)
             {
-                ApiKey          = options.DeepLAuthKey,
-                IsFreeApiKey    = options.DeepLFreeAuthKey,
-                SourceLanguage  = "EN",
-                TargetLanguage  = options.DeepLTargetLanguage,
+                ApiKey           = options.DeepLAuthKey,
+                IsFreeApiKey     = options.DeepLFreeAuthKey,
+                SourceLanguage   = "EN",
+                TargetLanguage   = options.DeepLTargetLanguage,
+                KeepSpecialWords = string.IsNullOrEmpty(options.KeepSpecialWordListFile) 
+                    ? null 
+                    : File.ReadAllLines(File.Exists(options.KeepSpecialWordListFile) 
+                            ? options.KeepSpecialWordListFile 
+                            : Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), options.KeepSpecialWordListFile))
+                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                    .ToArray()
             };
 
             Counter = 0;

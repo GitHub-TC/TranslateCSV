@@ -10,6 +10,7 @@ namespace TranslateCSV
 {
     internal class DeepLTranslate : IDisposable
     {
+        public string[] KeepSpecialWords { get; set; }
         public SemaphoreSlim ParallelDeepLCallsSemaphore { get; set; }
         private Lazy<HttpClient> DeepLHttpClient { get; set; }
 
@@ -60,6 +61,8 @@ namespace TranslateCSV
 
         private async Task<string> TranslateCall(string text)
         {
+            if(KeepSpecialWords != null) for (int i = 0; i < KeepSpecialWords.Length; i++) text = text.Replace(KeepSpecialWords[i], $" _{i}_");
+
             var @params = new Dictionary<string, string>() { 
                 { "auth_key",    ApiKey },
                 { "source_lang", SourceLanguage },
@@ -72,7 +75,11 @@ namespace TranslateCSV
 
             if (response.IsSuccessStatusCode) {
                 var jsonResonse = JsonSerializer.Deserialize<Dictionary<string, string>>(responseContent);
-                return jsonResonse["text"];
+                var translatedText = jsonResonse["text"];
+
+                if (KeepSpecialWords != null) for (int i = KeepSpecialWords.Length - 1; i >= 0; i--) translatedText = translatedText.Replace($" _{i}_", KeepSpecialWords[i]);
+
+                return translatedText;
             }
             else Console.WriteLine($"Translate '{text}' error {response.StatusCode}: {responseContent}");
 

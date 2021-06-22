@@ -33,6 +33,9 @@ namespace TranslateCSV
             [Option("csv-output", Required = false, HelpText = "Output CSV file if the output written to another file")]
             public string CsvOutputFile { get; set; }
 
+            [Option("keep-special-words-list", Required = false, Default = "SpecialWords.txt", HelpText = "Plain textfile with special words that don't translate")]
+            public string KeepSpecialWordListFile { get; set; }
+
             [Option("limit-translations", Required = false, Default = int.MaxValue, HelpText = "Limit the translations to N entries")]
             public int LimitTranslations { get; set; }
 
