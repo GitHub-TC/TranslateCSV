@@ -2,7 +2,7 @@
   "profiles": {
     "TranslateCSV": {
       "commandName": "Project",
-      "commandLineArgs": "--csv-input \"C:\\steamcmd\\empyrion.server\\Content\\Scenarios\\Reforged Eden\\Extras\\PDA\\PDA.csv\" --csv-output \"C:\\steamcmd\\empyrion.server\\Content\\Scenarios\\Reforged Eden\\Extras\\PDA\\PDA-out.csv\" --deepl-target-language DE --csv-target-language Deutsch --help"
+      "commandLineArgs": "--csv-input \"C:\\steamcmd\\empyrion.server\\Content\\Scenarios\\Reforged Eden\\Extras\\PDA\\PDA.csv\" --csv-output \"C:\\steamcmd\\empyrion.server\\Content\\Scenarios\\Reforged Eden\\Extras\\PDA\\PDA-out.csv\" --deepl-target-language DE --csv-target-language Deutsch --csv-ref-input \"C:\\steamcmd\\empyrion.server\\Content\\Scenarios\\Reforged Eden\\Extras\\PDA\\PDA-old.csv\" --limit-translations 3"
     }
   }
 }

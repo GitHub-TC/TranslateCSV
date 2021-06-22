@@ -23,7 +23,7 @@ namespace TranslateCSV
                 if (string.IsNullOrEmpty(options.DeepLAuthKey)) return;
             }
 
-            List<List<string>> translations = TranslationIO.ReadTranslationFromCsv(options.CsvFile);
+            var translations = TranslationIO.ReadTranslationFromCsv(options.CsvFile);
 
             Console.WriteLine($"Found {translations.Count} entries total (with headline)");
             var targetTranslateIndex = translations[0].FindIndex(f => f.Equals(options.CsvTargetLanguage, StringComparison.InvariantCultureIgnoreCase));
@@ -42,7 +42,15 @@ namespace TranslateCSV
             }
             Console.WriteLine($"Found source translation col for \"{options.CsvSourceLanguage}\" at {sourceTranslateIndex}");
 
-            Console.Write($"Start {(options.NewTranslate ? "new " : "")}translation for {Math.Min(options.LimitTranslations, translations.Count(t => options.NewTranslate || string.IsNullOrWhiteSpace(t[targetTranslateIndex])))} entries (y/n)? ");
+            var translationsRef = string.IsNullOrEmpty(options.CsvRefFile) ? null : TranslationIO.ReadTranslationFromCsv(options.CsvRefFile).ToDictionary(t => t[0], t => t);
+
+            int countTranslations = translations.Count(t => 
+                options.NewTranslate || 
+                string.IsNullOrWhiteSpace(t[targetTranslateIndex]) ||
+                (translationsRef != null && translationsRef.TryGetValue(t[0], out var refData) && refData[sourceTranslateIndex] != t[sourceTranslateIndex])
+            );
+            Console.Write($"Start {(options.NewTranslate ? "new " : "")}translation for {Math.Min(options.LimitTranslations, countTranslations)} entries (y/n)? ");
+
             if (Console.ReadKey().KeyChar != 'y')
             {
                 Console.WriteLine();
@@ -51,7 +59,7 @@ namespace TranslateCSV
             }
             Console.WriteLine();
 
-            var deepLTranslate = new DeepLTranslate()
+            var deepLTranslate = new DeepLTranslate(options.MaxParallelDeepLCalls)
             {
                 ApiKey          = options.DeepLAuthKey,
                 IsFreeApiKey    = options.DeepLFreeAuthKey,
@@ -63,7 +71,8 @@ namespace TranslateCSV
 
             Task.WaitAll(translations
                 .Where(t => options.NewTranslate || string.IsNullOrWhiteSpace(t[targetTranslateIndex]))
-                .Select(t => TranslateText(t, sourceTranslateIndex, targetTranslateIndex, deepLTranslate))
+                .Select(t => TranslateText(t, sourceTranslateIndex, targetTranslateIndex, deepLTranslate,
+                        translationsRef != null && translationsRef.TryGetValue(t[0], out var refTranslation) ? refTranslation : null))
                 .Take(options.LimitTranslations)
                 .ToArray());
 
@@ -73,9 +82,19 @@ namespace TranslateCSV
             TranslationIO.WriteTranslationToCsv(translations, options.CsvOutputFile ?? options.CsvFile);
         }
 
-        private static async Task TranslateText(List<string> textEntries, int sourceTranslateIndex, int targetTranslateIndex, DeepLTranslate deepLTranslate)
+        private static async Task TranslateText(List<string> textEntries, int sourceTranslateIndex, int targetTranslateIndex, DeepLTranslate deepLTranslate, List<string> refTranslation)
         {
-            textEntries[targetTranslateIndex] = await deepLTranslate.Translate(textEntries[sourceTranslateIndex]);
+            string sourceText = textEntries[sourceTranslateIndex];
+
+            if (refTranslation != null                              && 
+                refTranslation[sourceTranslateIndex] == sourceText  && 
+                !string.IsNullOrEmpty(refTranslation[targetTranslateIndex]))
+            {
+                textEntries[targetTranslateIndex] = refTranslation[targetTranslateIndex];
+                return;
+            }
+
+            textEntries[targetTranslateIndex] = await deepLTranslate.Translate(sourceText);
             Interlocked.Increment(ref Counter);
             Console.Write($"{Counter}\r");
         }

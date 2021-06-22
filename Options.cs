@@ -18,11 +18,14 @@ namespace TranslateCSV
             [Option("csv-target-language", Required = true, HelpText = "Target language for CSV file from head line e.g. Deutsch")]
             public string CsvTargetLanguage { get; set; }
 
-            [Option("csv-source-language", Required = false, HelpText = "Source language for CSV file from head line e.g. English")]
+            [Option("csv-source-language", Required = false, Default = "English", HelpText = "Source language for CSV file from head line e.g. English")]
             public string CsvSourceLanguage { get; set; }
 
             [Option("csv-input", Required = true, HelpText = "Input CSV file")]
             public string CsvFile { get; set; }
+
+            [Option("csv-ref-input", Required = false, HelpText = "Old reference CSV file to compare and copy existing translations")]
+            public string CsvRefFile { get; set; }
 
             [Option("new-translate", Required = false, HelpText = "Translate every entry and overwrite old translation")]
             public bool NewTranslate { get; set; }
@@ -32,6 +35,9 @@ namespace TranslateCSV
 
             [Option("limit-translations", Required = false, Default = int.MaxValue, HelpText = "Limit the translations to N entries")]
             public int LimitTranslations { get; set; }
+
+            [Option("max-parallel-deepl-calls", Required = false, Default = 8, HelpText = "Limit the translations to N calls parallel")]
+            public int MaxParallelDeepLCalls { get; set; }
 
         }
     }

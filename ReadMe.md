@@ -19,8 +19,10 @@ For this an access is needed which can be requested at https://www.deepl.com/pro
 | --csv-input               | **Required** Input CSV file
 | --new-translate           | Translate every entry and overwrite old translation
 | --csv-output              | Output CSV file if the output written to another file
-| --csv-source-language     | Source language for CSV file from head line e.g. English
+| --csv-source-language     | (Default: English) Source language for CSV file from head line e.g. English
+| --csv-ref-input           | Old reference CSV file to compare and copy existing translations
 | --limit-translations      | (Default: 2147483647) Limit the translations to N entries
+| --max-parallel-deepl-calls| (Default: 8) Limit the translations to N calls parallel
 | --help                    | Display this help screen.
 | --version                 | Display version information.
 
