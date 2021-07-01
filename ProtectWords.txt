@@ -1,0 +1,3 @@
+﻿(?'protect'\\n)
+(?'protect'\[{PlayerName}\])
+(?'protect'{PlayerName})

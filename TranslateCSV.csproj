@@ -10,11 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="SpecialWords.txt" />
+    <None Remove="ProtectWords.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="SpecialWords.txt">
+    <Content Include="ProtectWords.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
