@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace TranslateCSV
 {
     public class ProtectSpecials
     {
-        public Regex[] ProtectWords { get; set; }
-        public Dictionary<int, string> ProtecedData { get; set; } = new Dictionary<int, string>();
+        public Regex[] ProtectWords { get; set; } = new Regex[] { };
         public Dictionary<Regex, string> Glossar { get; set; } = new Dictionary<Regex, string>();
+        Dictionary<int, string> ProtecedData { get; set; } = new Dictionary<int, string>();
 
         public string Protect(string source)
         {
@@ -47,7 +45,6 @@ namespace TranslateCSV
                     }
                 }
             }
-
 
             return protectedString;
         }

@@ -3,21 +3,25 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace TranslateCSV
 {
-    internal class DeepLTranslate : IDisposable
+    public class DeepLTranslate : IDisposable
     {
         public string[] KeepSpecialWords { get; set; }
         public SemaphoreSlim ParallelDeepLCallsSemaphore { get; set; }
         private Lazy<HttpClient> DeepLHttpClient { get; set; }
 
-        public string ApiKey { get; internal set; }
-        public bool IsFreeApiKey { get; internal set; }
-        public string TargetLanguage { get; internal set; }
-        public string SourceLanguage { get; internal set; }
+        public string ApiKey { get; set; }
+        public bool IsFreeApiKey { get; set; }
+        public string TargetLanguage { get; set; }
+        public string SourceLanguage { get; set; }
+
+        public Regex[] ProtectWords { get; set; } = new Regex[] { };
+        public Dictionary<Regex, string> Glossar { get; set; } = new Dictionary<Regex, string>();
 
         public DeepLTranslate(int maxParallelDeepLCalls)
         {
@@ -61,13 +65,15 @@ namespace TranslateCSV
 
         private async Task<string> TranslateCall(string text)
         {
-            if(KeepSpecialWords != null) for (int i = 0; i < KeepSpecialWords.Length; i++) text = text.Replace(KeepSpecialWords[i], $" _{i}_");
+            var protect = new ProtectSpecials { ProtectWords = ProtectWords, Glossar = Glossar };
 
             var @params = new Dictionary<string, string>() { 
-                { "auth_key",    ApiKey },
-                { "source_lang", SourceLanguage },
-                { "target_lang", TargetLanguage },
-                { "text", text }
+                { "auth_key",       ApiKey },
+                { "source_lang",    SourceLanguage },
+                { "target_lang",    TargetLanguage },
+                { "tag_handling",   "xml" },
+                { "ignore_tags",    "x" },
+                { "text",           protect.Protect(text) }
             };
 
             var response        = await DeepLHttpClient.Value.GetAsync(new Uri(DeepLHttpClient.Value.BaseAddress, QueryHelpers.AddQueryString("v2/translate", @params)));
@@ -75,11 +81,7 @@ namespace TranslateCSV
 
             if (response.IsSuccessStatusCode) {
                 var jsonResonse = JsonSerializer.Deserialize<Dictionary<string, string>>(responseContent);
-                var translatedText = jsonResonse["text"];
-
-                if (KeepSpecialWords != null) for (int i = KeepSpecialWords.Length - 1; i >= 0; i--) translatedText = translatedText.Replace($" _{i}_", KeepSpecialWords[i]);
-
-                return translatedText;
+                return protect.Restore(jsonResonse["text"]);
             }
             else Console.WriteLine($"Translate '{text}' error {response.StatusCode}: {responseContent}");
 
