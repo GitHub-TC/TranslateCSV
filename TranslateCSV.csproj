@@ -10,10 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="GlossarWords.csv" />
     <None Remove="ProtectWords.txt" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="GlossarWords.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="ProtectWords.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

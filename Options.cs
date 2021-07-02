@@ -33,15 +33,17 @@ namespace TranslateCSV
             [Option("csv-output", Required = false, HelpText = "Output CSV file if the output written to another file")]
             public string CsvOutputFile { get; set; }
 
-            [Option("keep-special-words-list", Required = false, Default = "SpecialWords.txt", HelpText = "Plain textfile with special words that don't translate")]
+            [Option("keep-special-words-list", Required = false, Default = "ProtectWords.txt", HelpText = "Plain textfile with special words that don't translate and have to proteced")]
             public string KeepSpecialWordListFile { get; set; }
+
+            [Option("glossar-words", Required = false, Default = "GlossarWords.csv", HelpText = "CSV file for the manual translation glossar")]
+            public string GlossarFile { get; set; }
 
             [Option("limit-translations", Required = false, Default = int.MaxValue, HelpText = "Limit the translations to N entries")]
             public int LimitTranslations { get; set; }
 
             [Option("max-parallel-deepl-calls", Required = false, Default = 8, HelpText = "Limit the translations to N calls parallel")]
             public int MaxParallelDeepLCalls { get; set; }
-
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -63,18 +64,30 @@ namespace TranslateCSV
 
             var deepLTranslate = new DeepLTranslate(options.MaxParallelDeepLCalls)
             {
-                ApiKey           = options.DeepLAuthKey,
-                IsFreeApiKey     = options.DeepLFreeAuthKey,
-                SourceLanguage   = "EN",
-                TargetLanguage   = options.DeepLTargetLanguage,
-                KeepSpecialWords = string.IsNullOrEmpty(options.KeepSpecialWordListFile) 
-                    ? null 
-                    : File.ReadAllLines(File.Exists(options.KeepSpecialWordListFile) 
-                            ? options.KeepSpecialWordListFile 
-                            : Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), options.KeepSpecialWordListFile))
-                    .Where(t => !string.IsNullOrWhiteSpace(t))
-                    .ToArray()
+                ApiKey            = options.DeepLAuthKey,
+                IsFreeApiKey      = options.DeepLFreeAuthKey,
+                SourceLanguage    = "EN",
+                TargetLanguage    = options.DeepLTargetLanguage,
+                LimitTranslations = options.LimitTranslations,
             };
+
+            if (!string.IsNullOrEmpty(options.KeepSpecialWordListFile))
+            {
+                deepLTranslate.ProtectWords = File.ReadAllLines(File.Exists(options.KeepSpecialWordListFile)
+                                                ? options.KeepSpecialWordListFile
+                                                : Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), options.KeepSpecialWordListFile))
+                                                .Where(t => !string.IsNullOrWhiteSpace(t))
+                                                .Select(t => new Regex(t))
+                                                .ToArray();
+            }
+
+            if (!string.IsNullOrEmpty(options.GlossarFile))
+            {
+                var glossar = TranslationIO.ReadTranslationFromCsv(options.GlossarFile);
+                deepLTranslate.Glossar = glossar
+                    .Where(g => !string.IsNullOrWhiteSpace(g[sourceTranslateIndex]))
+                    .ToDictionary(g => new Regex($"(?'replace'{g[sourceTranslateIndex]?.Replace(" ","\\s")})[\\W]"), g => g[targetTranslateIndex]);
+            }
 
             Counter = 0;
 
@@ -82,7 +95,6 @@ namespace TranslateCSV
                 .Where(t => options.NewTranslate || string.IsNullOrWhiteSpace(t[targetTranslateIndex]))
                 .Select(t => TranslateText(t, sourceTranslateIndex, targetTranslateIndex, deepLTranslate,
                         translationsRef != null && translationsRef.TryGetValue(t[0], out var refTranslation) ? refTranslation : null))
-                .Take(options.LimitTranslations)
                 .ToArray());
 
             Console.WriteLine($"{Counter}");
@@ -103,7 +115,10 @@ namespace TranslateCSV
                 return;
             }
 
-            textEntries[targetTranslateIndex] = await deepLTranslate.Translate(sourceText);
+            var result = await deepLTranslate.Translate(sourceText);
+            if (result == null) return;
+
+            textEntries[targetTranslateIndex] = result;
             Interlocked.Increment(ref Counter);
             Console.Write($"{Counter}\r");
         }

@@ -11,7 +11,6 @@ namespace TranslateCSV
 {
     public class DeepLTranslate : IDisposable
     {
-        public string[] KeepSpecialWords { get; set; }
         public SemaphoreSlim ParallelDeepLCallsSemaphore { get; set; }
         private Lazy<HttpClient> DeepLHttpClient { get; set; }
 
@@ -19,9 +18,12 @@ namespace TranslateCSV
         public bool IsFreeApiKey { get; set; }
         public string TargetLanguage { get; set; }
         public string SourceLanguage { get; set; }
+        public int LimitTranslations { get; set; }
 
         public Regex[] ProtectWords { get; set; } = new Regex[] { };
         public Dictionary<Regex, string> Glossar { get; set; } = new Dictionary<Regex, string>();
+
+        int translationsCounter;
 
         public DeepLTranslate(int maxParallelDeepLCalls)
         {
@@ -45,6 +47,8 @@ namespace TranslateCSV
 
         public async Task<string> Translate(string text)
         {
+            if (translationsCounter > LimitTranslations) return null;
+
             await ParallelDeepLCallsSemaphore.WaitAsync();
 
             try
@@ -65,6 +69,8 @@ namespace TranslateCSV
 
         private async Task<string> TranslateCall(string text)
         {
+            if (string.IsNullOrWhiteSpace(text) || Interlocked.Increment(ref translationsCounter) > LimitTranslations) return null;
+
             var protect = new ProtectSpecials { ProtectWords = ProtectWords, Glossar = Glossar };
 
             var @params = new Dictionary<string, string>() { 
@@ -80,8 +86,15 @@ namespace TranslateCSV
             var responseContent = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode) {
-                var jsonResonse = JsonSerializer.Deserialize<Dictionary<string, string>>(responseContent);
-                return protect.Restore(jsonResonse["text"]);
+                try
+                {
+                    var jsonResonse = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+                    return protect.Restore(((JsonElement)jsonResonse["translations"])[0].GetProperty("text").GetString());
+                }
+                catch (Exception error)
+                {
+                    Console.WriteLine($"Translate '{text}' error {response.StatusCode}: {responseContent} -> {error}");
+                }
             }
             else Console.WriteLine($"Translate '{text}' error {response.StatusCode}: {responseContent}");
 
