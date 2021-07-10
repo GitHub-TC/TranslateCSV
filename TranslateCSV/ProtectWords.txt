@@ -1,4 +1,7 @@
-﻿(?'protect'\[(\S+?)\])
+﻿(?'protect'&)
+(?'protect'<(/?[^<]+)>)
+(?'protect'@\w+)
+(?'protect'\[(\S+?)\])
 (?'protect'\\n)
 (?'protect'\[{PlayerName}\])
 (?'protect'{PlayerName})

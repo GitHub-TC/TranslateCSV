@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -83,13 +84,17 @@ namespace TranslateCSV
 
             if (!string.IsNullOrEmpty(options.GlossarFile))
             {
-                var glossar = TranslationIO.ReadTranslationFromCsv(options.GlossarFile);
+                var glossar = TranslationIO.ReadTranslationFromCsv(File.Exists(options.GlossarFile)
+                                                ? options.GlossarFile
+                                                : Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), options.GlossarFile));
                 deepLTranslate.Glossar = glossar
                     .Where(g => !string.IsNullOrWhiteSpace(g[sourceTranslateIndex]))
                     .ToDictionary(g => new Regex($"(?'replace'{g[sourceTranslateIndex]?.Replace(" ","\\s")})[\\W]"), g => g[targetTranslateIndex]);
             }
 
             Counter = 0;
+
+            CopyDuplicates(translations, sourceTranslateIndex, targetTranslateIndex);
 
             Task.WaitAll(translations
                 .Where(t => options.NewTranslate || string.IsNullOrWhiteSpace(t[targetTranslateIndex]))
@@ -101,6 +106,20 @@ namespace TranslateCSV
 
             Console.WriteLine($"write output to \"{options.CsvOutputFile ?? options.CsvFile}\"");
             TranslationIO.WriteTranslationToCsv(translations, options.CsvOutputFile ?? options.CsvFile);
+        }
+
+        private static void CopyDuplicates(List<List<string>> translations, int sourceTranslateIndex, int targetTranslateIndex)
+        {
+            var check = new ConcurrentDictionary<string, string>();
+
+            Task.WaitAll(translations
+                .Select(t => Task.Run(() =>
+                    {
+                        if (check.TryGetValue(t[sourceTranslateIndex], out var translatedText)) t[targetTranslateIndex] = translatedText;
+                        else check.TryAdd(t[sourceTranslateIndex], t[targetTranslateIndex]);
+                    })
+                )
+                .ToArray());
         }
 
         private static async Task TranslateText(List<string> textEntries, int sourceTranslateIndex, int targetTranslateIndex, DeepLTranslate deepLTranslate, List<string> refTranslation)

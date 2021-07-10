@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
@@ -22,6 +23,8 @@ namespace TranslateCSV
 
         public Regex[] ProtectWords { get; set; } = new Regex[] { };
         public Dictionary<Regex, string> Glossar { get; set; } = new Dictionary<Regex, string>();
+
+        public ConcurrentDictionary<string, string> AlreadyTranslated { get; set; } = new ConcurrentDictionary<string, string>();
 
         int translationsCounter;
 
@@ -70,6 +73,7 @@ namespace TranslateCSV
         private async Task<string> TranslateCall(string text)
         {
             if (string.IsNullOrWhiteSpace(text) || Interlocked.Increment(ref translationsCounter) > LimitTranslations) return null;
+            if (AlreadyTranslated.TryGetValue(text, out var alreadyTranslated)) return alreadyTranslated;
 
             var protect = new ProtectSpecials { ProtectWords = ProtectWords, Glossar = Glossar };
 
@@ -89,7 +93,10 @@ namespace TranslateCSV
                 try
                 {
                     var jsonResonse = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
-                    return protect.Restore(((JsonElement)jsonResonse["translations"])[0].GetProperty("text").GetString());
+                    var translatedText = protect.Restore(((JsonElement)jsonResonse["translations"])[0].GetProperty("text").GetString());
+                    AlreadyTranslated.TryAdd(text, translatedText);
+
+                    return translatedText;
                 }
                 catch (Exception error)
                 {
