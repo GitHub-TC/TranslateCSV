@@ -11,6 +11,8 @@ namespace TranslateCSV
     {
         public static List<List<string>> ReadTranslationFromCsv(string csvFile)
         {
+            if (!File.Exists(csvFile)) throw new FileNotFoundException("File not found", csvFile);
+
             var translations = new List<List<string>>();
             using var reader = new StreamReader(csvFile);
             using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
