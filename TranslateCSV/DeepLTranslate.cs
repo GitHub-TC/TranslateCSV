@@ -77,35 +77,55 @@ namespace TranslateCSV
 
             var protect = new ProtectSpecials { ProtectWords = ProtectWords, Glossar = Glossar };
 
-            var @params = new Dictionary<string, string>() { 
-                { "auth_key",       ApiKey },
-                { "source_lang",    SourceLanguage },
-                { "target_lang",    TargetLanguage },
-                { "tag_handling",   "xml" },
-                { "ignore_tags",    "x" },
-                { "text",           protect.Protect(text) }
-            };
+            var protecedText = protect.Protect(text);
+            var startText = 0;
+            string completeTranslatedText = null;
 
-            var response        = await DeepLHttpClient.Value.GetAsync(new Uri(DeepLHttpClient.Value.BaseAddress, QueryHelpers.AddQueryString("v2/translate", @params)));
-            var responseContent = await response.Content.ReadAsStringAsync();
+            while (true)
+            {
+                var endText   = protecedText.Length > (startText + 1000) ? Math.Max(startText + 1000, protecedText.IndexOf('.', startText + 1000) + 1) : protecedText.Length;
 
-            if (response.IsSuccessStatusCode) {
-                try
+                var @params = new Dictionary<string, string>() {
+                    { "auth_key",       ApiKey },
+                    { "source_lang",    SourceLanguage },
+                    { "target_lang",    TargetLanguage },
+                    { "tag_handling",   "xml" },
+                    { "ignore_tags",    "x" },
+                    { "text",            protecedText.Substring(startText, endText - startText)}
+                };
+
+                startText = endText;
+
+                var response = await DeepLHttpClient.Value.GetAsync(new Uri(DeepLHttpClient.Value.BaseAddress, QueryHelpers.AddQueryString("v2/translate", @params)));
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
                 {
-                    var jsonResonse = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
-                    var translatedText = protect.Restore(((JsonElement)jsonResonse["translations"])[0].GetProperty("text").GetString());
-                    AlreadyTranslated.TryAdd(text, translatedText);
+                    try
+                    {
+                        var jsonResonse = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+                        var translatedText = protect.Restore(((JsonElement)jsonResonse["translations"])[0].GetProperty("text").GetString());
 
-                    return translatedText;
+                        if (completeTranslatedText == null) completeTranslatedText = translatedText;
+                        else                                completeTranslatedText += " " + translatedText;
+
+                        if (endText == protecedText.Length)
+                        {
+                            AlreadyTranslated.TryAdd(text, translatedText);
+
+                            return translatedText;
+                        }
+                    }
+                    catch (Exception error)
+                    {
+                        Console.WriteLine($"Translate '{text}' error {response.StatusCode}: {responseContent} -> {error}");
+                        return null;
+                    }
                 }
-                catch (Exception error)
-                {
-                    Console.WriteLine($"Translate '{text}' error {response.StatusCode}: {responseContent} -> {error}");
-                }
+                else { Console.WriteLine($"Translate '{text}' error {response.StatusCode}: {responseContent}"); return null; }
             }
-            else Console.WriteLine($"Translate '{text}' error {response.StatusCode}: {responseContent}");
 
-            return null;
+            
         }
     }
 }
