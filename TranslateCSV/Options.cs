@@ -9,7 +9,7 @@ namespace TranslateCSV
             [Option("deepl-auth-key", Required = false, HelpText = "DeepL API auth key from https://www.deepl.com/pro#developer if it is not specified it will be requested by input")]
             public string DeepLAuthKey { get; set; }
 
-            [Option("deepl-free", Required = false, Default = true, HelpText = "Use DeepL API with 'DeepL API Free' auth key")]
+            [Option("deepl-free", Required = false, Default = false, HelpText = "Use DeepL API with 'DeepL API Free' auth key")]
             public bool DeepLFreeAuthKey { get; set; }
 
             [Option("deepl-target-language", Required = true, HelpText = "Target language for DeepL API target_lang e.g. DE from https://www.deepl.com/docs-api/translating-text/request/")]

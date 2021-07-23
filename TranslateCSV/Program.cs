@@ -21,7 +21,7 @@ namespace TranslateCSV
         {
             if (string.IsNullOrEmpty(options.DeepLAuthKey) && options.LimitTranslations > 0)
             {
-                Console.Write("DeepL REST API auth key:");
+                Console.Write($"DeepL REST API {(options.DeepLFreeAuthKey ? "FREE" : "PRO")} auth key:");
                 options.DeepLAuthKey = Console.ReadLine();
 
                 if (string.IsNullOrEmpty(options.DeepLAuthKey)) return;

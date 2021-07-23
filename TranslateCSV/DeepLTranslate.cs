@@ -81,7 +81,7 @@ namespace TranslateCSV
             var startText = 0;
             string completeTranslatedText = null;
 
-            while (true)
+            while (true)    
             {
                 var endText   = protecedText.Length > (startText + 1000) ? Math.Max(startText + 1000, protecedText.IndexOf('.', startText + 1000) + 1) : protecedText.Length;
 
