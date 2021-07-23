@@ -111,9 +111,9 @@ namespace TranslateCSV
 
                         if (endText == protecedText.Length)
                         {
-                            AlreadyTranslated.TryAdd(text, translatedText);
+                            AlreadyTranslated.TryAdd(text, completeTranslatedText);
 
-                            return translatedText;
+                            return completeTranslatedText;
                         }
                     }
                     catch (Exception error)
