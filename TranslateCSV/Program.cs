@@ -146,7 +146,7 @@ namespace TranslateCSV
             var result = await deepLTranslate.Translate(sourceText);
             if (result == null) return;
 
-            textEntries[targetTranslateIndex] = result;
+            textEntries[targetTranslateIndex] = result.Replace('\"', '\'');     // " und damit "" wird vom Spiel nicht korrekt verarbeitet
             Interlocked.Increment(ref Counter);
             Console.Write($"{Counter}\r");
         }
