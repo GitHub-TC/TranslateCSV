@@ -5,7 +5,13 @@ VisualStudioVersion = 16.0.31313.79
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TranslateCSV", "TranslateCSV\TranslateCSV.csproj", "{62F435F0-F71B-4B73-87BE-E35A7A30669A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TranslateCSVTests", "TranslateCSVTests\TranslateCSVTests.csproj", "{966E214E-2B43-430B-8792-36FA278AC15D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TranslateCSVTests", "TranslateCSVTests\TranslateCSVTests.csproj", "{966E214E-2B43-430B-8792-36FA278AC15D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FE36C00E-F2AE-4E63-B036-88338E8AA873}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		ReadMe.md = ReadMe.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
