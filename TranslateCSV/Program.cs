@@ -48,7 +48,7 @@ namespace TranslateCSV
 
             var translationsRef = string.IsNullOrEmpty(options.CsvRefFile) || !File.Exists(options.CsvRefFile)
                 ? null
-                : TranslationIO.ReadTranslationFromCsv(options.CsvRefFile).ToDictionary(t => t[0], t => t);
+                : TranslationIO.ReadTranslationFromCsv(options.CsvRefFile).ToDictionaryUnique(t => t[0], t => t);
 
             int countTranslations = translations.Count(t =>
                 options.NewTranslate ||

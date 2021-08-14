@@ -6,4 +6,4 @@
 (?'protect'\[(\S+?)\])
 (?'protect'\\n)
 (?'protect'\[{PlayerName}\])
-(?'protect'{PlayerName})
+(?'protect'{.+?})
