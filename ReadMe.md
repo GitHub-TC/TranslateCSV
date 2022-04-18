@@ -3,8 +3,12 @@
 A command line program to translate the CSV files from Empyrion or a scenario.
 
 ## DeepL Translation engine
-For translation the translation API of DeepL https://www.deepl.com/translator is used. 
+For translation the translation API of DeepL https://www.deepl.com/translator is used.\
 For this an access is needed which can be requested at https://www.deepl.com/pro#developer.
+
+For the firsts Tests you can start with the "Deep API Free" with 500k characters per month.
+
+![](Screenshots/DeepL.png)
 
 ## Call
 
