@@ -57,6 +57,22 @@ namespace TranslateCSV.Tests
             Assert.AreEqual("<x i=\"7\"/>Emergency situation detected! <x i=\"6\"/> Protocol UCH001A has been initialized!", protect);
         }
 
-        
+        [TestMethod]
+        public void TestProtectWordsFile2()
+        {
+            var p = new ProtectSpecials()
+            {
+                ProtectWords = File.ReadAllLines(@"..\..\..\..\TranslateCSV\ProtectWords.txt").Select(W => new Regex(W)).ToArray(),
+                Glossar = new Dictionary<Regex, string>()
+            };
+
+            var text = @"<color=#019245><b>You won! </b></color>Here take your <color=#fddc1e>{2*GoldCoinsPlayerBet} Gold Coins</color>!";
+
+            var protect = p.Protect(text);
+            Assert.AreEqual(text, p.Restore(protect));
+
+            Assert.AreEqual("<x i=\"9\"/>You won! <x i=\"8\"/>Here take your <x i=\"7\"/> Gold Coins<x i=\"0\"/>!", protect);
+        }
+
     }
 }
