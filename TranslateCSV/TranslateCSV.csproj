@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Description>Translation for Empyrion CSV files</Description>
     <Copyright>ASTIC/TC Copyright © 2021</Copyright>
     <Authors>ASTIC/TC</Authors>
