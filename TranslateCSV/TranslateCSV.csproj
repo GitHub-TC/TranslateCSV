@@ -20,6 +20,15 @@
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 	</PropertyGroup>
 
+	<!-- Self-contained publish defaults (used by Standalone.pubxml and dotnet publish) -->
+	<PropertyGroup Condition="'$(PublishProfile)' == 'Standalone' Or '$(RuntimeIdentifier)' != ''">
+		<SelfContained>true</SelfContained>
+		<PublishSingleFile>true</PublishSingleFile>
+		<PublishReadyToRun>true</PublishReadyToRun>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<None Remove="GlossarWords.csv" />
 		<None Remove="ProtectWords.txt" />
@@ -37,5 +46,17 @@
 	<ItemGroup>
 		<PackageReference Include="CsvHelper" Version="33.0.1" />
 	</ItemGroup>
+
+	<!-- Nach dem Publish: TranslateCSV.zip im Publish-Verzeichnis erstellen -->
+	<Target Name="ZipAfterPublish" AfterTargets="Publish">
+		<PropertyGroup>
+			<ZipPath>$(PublishDir)..\TranslateCSV.zip</ZipPath>
+		</PropertyGroup>
+		<Message Text="Erstelle $(ZipPath) ..." Importance="high" />
+		<ZipDirectory SourceDirectory="$(PublishDir)"
+		              DestinationFile="$(ZipPath)"
+		              Overwrite="true" />
+		<Message Text="✔ TranslateCSV.zip erstellt: $(ZipPath)" Importance="high" />
+	</Target>
 
 </Project>

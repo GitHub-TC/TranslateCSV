@@ -126,7 +126,7 @@ namespace TranslateCSV
         private static string? ResolveFile(string path)
         {
             if (File.Exists(path)) return path;
-            var next = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, path);
+            var next = Path.Combine(AppContext.BaseDirectory, path);
             return File.Exists(next) ? next : null;
         }
 
