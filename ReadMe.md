@@ -1,48 +1,283 @@
-﻿# TranslateCSV
+# TranslateCSV 2.0
 
-A command line program to translate the CSV files from Empyrion or a scenario.
+---
 
-## DeepL Translation engine
-For translation the translation API of DeepL https://www.deepl.com/translator is used.\
-For this an access is needed which can be requested at https://www.deepl.com/pro#developer.
+> 🇩🇪 [Deutsch](#deutsch) &nbsp;|&nbsp; 🇬🇧 [English](#english) &nbsp;|&nbsp; 🇫🇷 [Français](#français)
 
-For the firsts Tests you can start with the "Deep API Free" with 500k characters per month.
+---
+
+## Deutsch
+
+### Was macht dieses Programm?
+
+**TranslateCSV** ist ein Windows-Programm mit grafischer Oberfläche zum Übersetzen von CSV-Dateien aus dem Spiel **Empyrion – Galactic Survival** (oder beliebigen anderen Szenarien) mithilfe der [DeepL-API](https://www.deepl.com/translator).
+
+Das Programm übersetzt die Textinhalte einer bestimmten Spalte in einer CSV-Datei automatisch und schreibt die Übersetzungen direkt in die Ziel-Spalte zurück.
+
+---
+
+### ⚠️ Wichtig: Übersetzungslimit beim Programmstart
+
+> **Das Programm startet IMMER mit einem Limit von 5 Übersetzungen** (Einstellung „Max. Übersetzungen" im Tab „Erweitert").
+
+Dies ist ein Sicherheitsmechanismus, damit bei der ersten Verwendung keine unnötigen API-Kosten entstehen und man das Ergebnis zunächst prüfen kann.
+
+**Vorgehensweise:**
+1. Starte das Programm und konfiguriere alle Einstellungen
+2. Führe eine erste Übersetzung mit dem Limit = 5 aus
+3. Prüfe, ob die 5 Einträge korrekt übersetzt wurden (Zieldatei öffnen)
+4. Wenn alles stimmt: setze das Limit auf **0** (= unbegrenzt) und starte erneut
+
+---
+
+### 💳 DeepL-Konto & Kosten
+
+Für die Übersetzung wird ein kostenloser oder kostenpflichtiger DeepL-API-Schlüssel benötigt.
+
+| Kontotyp | Zeichen/Monat | Kosten | Schlüssel endet auf |
+|---|---|---|---|
+| **Free** | 500.000 | kostenlos | `:fx` |
+| **Pro** | unbegrenzt | kostenpflichtig | (beliebig) |
+
+> 💡 **Tipp:** Den kostenlosen API-Schlüssel bekommst du unter: https://www.deepl.com/pro#developer
 
 ![](Screenshots/DeepL.png)
 
-## Call
+Der kostenlose Account reicht für normale Szenarien gut aus – aber Vorsicht: Das monatliche Kontingent wird bei größeren CSV-Dateien schnell verbraucht. Nutze das **Übersetzungslimit** und die **Referenzdatei**, um bereits übersetzte Texte nicht erneut zu übersetzen.
 
-For the current commandline parameter please call:
-```
-TranslateCSV.exe --help
-```
+---
 
-for example:
+### 📄 ECF-Dateien zu CSV konvertieren
 
-```
-TranslateCSV.exe --csv-input "C:\steamcmd\empyrion.server\Content\Scenarios\Reforged Eden\Extras\PDA\PDA.csv" --deepl-target-language DE --csv-target-language Deutsch --deepl-free
-```
+Viele Empyrion-Konfigurationsdateien liegen als `.ecf`-Dateien vor (z. B. `TokenConfig.ecf`, `TraderNPCConfig.ecf`). Diese müssen zuerst in das CSV-Format umgewandelt werden.
 
-
-# Files for translation
-
-Copy the TranslateCSV.exe in the directories and make batch files with the commands below and execute them from a command line window
-
-### ...\Extras\Localization.csv:
+Dafür steht das Hilfsprogramm **ECFtoCSV** zur Verfügung:
 
 ```
-TranslateCSV.exe --csv-input Localization.csv --csv-output Localization.csv --deepl-target-language DE --csv-target-language Deutsch --csv-ref-input Localization-old.csv --deepl-free
-IF ERRORLEVEL 0 COPY /Y Localization.csv Localization-old.csv
+Z:\Projekte\C#\Empyrion\ECFtoCSV
 ```
 
-### ...\Extras\PDA.csv
+**Beispieldateien:**
 ```
-TranslateCSV.exe --csv-input PDA.csv --csv-output PDA.csv --deepl-target-language DE --csv-target-language Deutsch --csv-ref-input PDA-old.csv --deepl-free
-IF ERRORLEVEL 0 COPY /Y PDA.csv PDA-old.csv
+C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuration\TokenConfig.ecf
+C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuration\TraderNPCConfig.ecf
 ```
 
-### ...\Content\Configuration\Dialogues.csv
+**Workflow:**
+1. ECF → CSV konvertieren (ECFtoCSV)
+2. CSV übersetzen (TranslateCSV)
+3. CSV → ECF zurückkonvertieren (ECFtoCSV)
+
+---
+
+### 🖥️ Bedienung
+
+1. **Tab „🔑 API & Sprachen"**
+   - DeepL-API-Schlüssel eingeben
+   - Kontotyp wählen (Free / Pro)
+   - Quellsprache (Spaltenname in der CSV, z. B. `English`)
+   - Zielsprache (Spaltenname in der CSV, z. B. `Deutsch`)
+   - DeepL-Sprachcode (z. B. `DE`, `FR`, `ES`)
+
+2. **Tab „📁 Dateien"**
+   - Eingabedatei (Pflicht): die zu übersetzende CSV-Datei
+   - Ausgabedatei (optional): leer lassen = Eingabedatei wird direkt überschrieben
+   - Referenzdatei (optional): eine alte Version der CSV – bereits vorhandene Übersetzungen werden direkt übernommen, ohne die API aufzurufen
+
+3. **Tab „⚙ Erweitert"**
+   - **Max. Übersetzungen**: beim Start immer **5** – für Tests. Auf **0** setzen für eine vollständige Übersetzung
+   - Parallele API-Aufrufe: Standard 8, erhöhen für schnellere Übersetzung großer Dateien
+
+4. **▶ Übersetzung starten** – das Protokollfenster zeigt den Fortschritt in Echtzeit
+
+---
+
+### 📦 Installation
+
+Keine Installation notwendig. Einfach die bereitgestellte `TranslateCSV.exe` (Standalone-Version) herunterladen und starten. .NET muss **nicht** installiert sein.
+
+---
+---
+
+## English
+
+### What does this program do?
+
+**TranslateCSV** is a Windows application with a graphical interface for translating CSV files from the game **Empyrion – Galactic Survival** (or any other scenario) using the [DeepL API](https://www.deepl.com/translator).
+
+The program automatically translates the text content of a specific column in a CSV file and writes the translations back into the target column.
+
+---
+
+### ⚠️ Important: Translation limit on startup
+
+> **The program ALWAYS starts with a limit of 5 translations** (setting "Max. translations" in the "Advanced" tab).
+
+This is a safety mechanism to prevent unnecessary API costs on first use and to allow you to review the results before running a full translation.
+
+**Recommended workflow:**
+1. Start the program and configure all settings
+2. Run a first translation with the limit = 5
+3. Check whether the 5 entries were translated correctly (open the output file)
+4. If everything looks good: set the limit to **0** (= unlimited) and start again
+
+---
+
+### 💳 DeepL account & costs
+
+A free or paid DeepL API key is required for translation.
+
+| Account type | Characters/month | Cost | Key ends with |
+|---|---|---|---|
+| **Free** | 500,000 | free | `:fx` |
+| **Pro** | unlimited | paid | (any) |
+
+> 💡 **Tip:** Get your free API key at: https://www.deepl.com/pro#developer
+
+![](Screenshots/DeepL.png)
+
+The free account is sufficient for most scenarios – but be careful: the monthly quota can be used up quickly with larger CSV files. Use the **translation limit** and the **reference file** to avoid re-translating texts that have already been translated.
+
+---
+
+### 📄 Converting ECF files to CSV
+
+Many Empyrion configuration files are stored as `.ecf` files (e.g. `TokenConfig.ecf`, `TraderNPCConfig.ecf`). These must first be converted to CSV format.
+
+The **ECFtoCSV** utility is available for this purpose:
+
 ```
-TranslateCSV.exe --csv-input Dialogues.csv --csv-output Dialogues.csv --deepl-target-language DE --csv-target-language Deutsch --csv-ref-input Dialogues-old.csv --deepl-free
-IF ERRORLEVEL 0 COPY /Y Dialogues.csv Dialogues-old.csv
+Z:\Projekte\C#\Empyrion\ECFtoCSV
 ```
+
+**Example files:**
+```
+C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuration\TokenConfig.ecf
+C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuration\TraderNPCConfig.ecf
+```
+
+**Workflow:**
+1. Convert ECF → CSV (ECFtoCSV)
+2. Translate CSV (TranslateCSV)
+3. Convert CSV → ECF back (ECFtoCSV)
+
+---
+
+### 🖥️ How to use
+
+1. **Tab "🔑 API & Languages"**
+   - Enter your DeepL API key
+   - Select account type (Free / Pro)
+   - Source language (column name in the CSV, e.g. `English`)
+   - Target language (column name in the CSV, e.g. `Deutsch`)
+   - DeepL language code (e.g. `DE`, `FR`, `ES`)
+
+2. **Tab "📁 Files"**
+   - Input file (required): the CSV file to translate
+   - Output file (optional): leave empty = input file will be overwritten directly
+   - Reference file (optional): an older version of the CSV – existing translations are reused without calling the API
+
+3. **Tab "⚙ Advanced"**
+   - **Max. translations**: always **5** on startup – for testing. Set to **0** for a full translation run
+   - Parallel API calls: default 8, increase for faster translation of large files
+
+4. **▶ Start Translation** – the log window shows progress in real time
+
+---
+
+### 📦 Installation
+
+No installation required. Simply download the provided `TranslateCSV.exe` (standalone version) and run it. .NET does **not** need to be installed.
+
+---
+---
+
+## Français
+
+### Que fait ce programme ?
+
+**TranslateCSV** est une application Windows avec interface graphique pour traduire les fichiers CSV du jeu **Empyrion – Galactic Survival** (ou de tout autre scénario) en utilisant l'[API DeepL](https://www.deepl.com/translator).
+
+Le programme traduit automatiquement le contenu textuel d'une colonne spécifique d'un fichier CSV et réécrit les traductions dans la colonne cible.
+
+---
+
+### ⚠️ Important : limite de traduction au démarrage
+
+> **Le programme démarre TOUJOURS avec une limite de 5 traductions** (paramètre « Traductions max. » dans l'onglet « Avancé »).
+
+Il s'agit d'un mécanisme de sécurité pour éviter des coûts API inutiles lors de la première utilisation et pour permettre de vérifier les résultats avant de lancer une traduction complète.
+
+**Procédure recommandée :**
+1. Démarrer le programme et configurer tous les paramètres
+2. Effectuer une première traduction avec la limite = 5
+3. Vérifier que les 5 entrées ont été correctement traduites (ouvrir le fichier de sortie)
+4. Si tout est correct : mettre la limite à **0** (= illimité) et relancer
+
+---
+
+### 💳 Compte DeepL & coûts
+
+Une clé API DeepL gratuite ou payante est nécessaire pour la traduction.
+
+| Type de compte | Caractères/mois | Coût | Clé se terminant par |
+|---|---|---|---|
+| **Gratuit** | 500 000 | gratuit | `:fx` |
+| **Pro** | illimité | payant | (quelconque) |
+
+> 💡 **Conseil :** Obtenez votre clé API gratuite sur : https://www.deepl.com/pro#developer
+
+![](Screenshots/DeepL.png)
+
+Le compte gratuit est suffisant pour la plupart des scénarios – mais attention : le quota mensuel peut être rapidement épuisé avec de grands fichiers CSV. Utilisez la **limite de traductions** et le **fichier de référence** pour éviter de retraduire des textes déjà traduits.
+
+---
+
+### 📄 Conversion des fichiers ECF en CSV
+
+De nombreux fichiers de configuration d'Empyrion sont stockés sous forme de fichiers `.ecf` (p. ex. `TokenConfig.ecf`, `TraderNPCConfig.ecf`). Ceux-ci doivent d'abord être convertis au format CSV.
+
+L'utilitaire **ECFtoCSV** est disponible à cet effet :
+
+```
+Z:\Projekte\C#\Empyrion\ECFtoCSV
+```
+
+**Fichiers d'exemple :**
+```
+C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuration\TokenConfig.ecf
+C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuration\TraderNPCConfig.ecf
+```
+
+**Flux de travail :**
+1. Convertir ECF → CSV (ECFtoCSV)
+2. Traduire le CSV (TranslateCSV)
+3. Reconvertir CSV → ECF (ECFtoCSV)
+
+---
+
+### 🖥️ Utilisation
+
+1. **Onglet « 🔑 API & Langues »**
+   - Entrer la clé API DeepL
+   - Choisir le type de compte (Gratuit / Pro)
+   - Langue source (nom de la colonne dans le CSV, p. ex. `English`)
+   - Langue cible (nom de la colonne dans le CSV, p. ex. `Deutsch`)
+   - Code de langue DeepL (p. ex. `DE`, `FR`, `ES`)
+
+2. **Onglet « 📁 Fichiers »**
+   - Fichier d'entrée (obligatoire) : le fichier CSV à traduire
+   - Fichier de sortie (optionnel) : laisser vide = le fichier d'entrée sera directement écrasé
+   - Fichier de référence (optionnel) : une ancienne version du CSV – les traductions existantes sont réutilisées sans appeler l'API
+
+3. **Onglet « ⚙ Avancé »**
+   - **Traductions max.** : toujours **5** au démarrage – pour les tests. Mettre à **0** pour une traduction complète
+   - Appels API parallèles : par défaut 8, augmenter pour une traduction plus rapide des grands fichiers
+
+4. **▶ Démarrer la traduction** – la fenêtre de journal affiche la progression en temps réel
+
+---
+
+### 📦 Installation
+
+Aucune installation requise. Téléchargez simplement le fichier `TranslateCSV.exe` fourni (version autonome) et lancez-le. .NET n'a **pas** besoin d'être installé.
