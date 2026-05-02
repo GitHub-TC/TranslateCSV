@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -13,18 +13,19 @@ namespace TranslateCSV
     public class DeepLTranslate : IDisposable
     {
         public SemaphoreSlim ParallelDeepLCallsSemaphore { get; set; }
-        private Lazy<HttpClient> DeepLHttpClient { get; set; }
+        private Lazy<HttpClient>? DeepLHttpClient { get; set; }
 
-        public string ApiKey { get; set; }
+        public string ApiKey { get; set; } = string.Empty;
         public bool IsFreeApiKey { get; set; }
-        public string TargetLanguage { get; set; }
-        public string SourceLanguage { get; set; }
+        public string TargetLanguage { get; set; } = string.Empty;
+        public string SourceLanguage { get; set; } = string.Empty;
         public int LimitTranslations { get; set; }
 
-        public Regex[] ProtectWords { get; set; } = new Regex[] { };
-        public Dictionary<Regex, string> Glossar { get; set; } = new Dictionary<Regex, string>();
+        public Regex[] ProtectWords { get; set; } = Array.Empty<Regex>();
+        public Dictionary<Regex, string> Glossar { get; set; } = new();
+        public ConcurrentDictionary<string, string> AlreadyTranslated { get; set; } = new();
 
-        public ConcurrentDictionary<string, string> AlreadyTranslated { get; set; } = new ConcurrentDictionary<string, string>();
+        public event Action<string>? OnLog;
 
         int translationsCounter;
 
@@ -36,10 +37,11 @@ namespace TranslateCSV
                 BaseAddress = new Uri(IsFreeApiKey ? "https://api-free.deepl.com" : "https://api.deepl.com")
             });
         }
+
         public void Dispose()
         {
             ParallelDeepLCallsSemaphore?.Dispose();
-            ParallelDeepLCallsSemaphore = null;
+            ParallelDeepLCallsSemaphore = null!;
 
             if (DeepLHttpClient?.IsValueCreated == true)
             {
@@ -48,19 +50,19 @@ namespace TranslateCSV
             }
         }
 
-        public async Task<string> Translate(string text)
+        public async Task<string?> Translate(string text, CancellationToken cancellationToken = default)
         {
             if (translationsCounter > LimitTranslations) return null;
 
-            await ParallelDeepLCallsSemaphore.WaitAsync();
-
+            await ParallelDeepLCallsSemaphore.WaitAsync(cancellationToken);
             try
             {
-                return await TranslateCall(text);
+                return await TranslateCall(text, cancellationToken);
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception error)
             {
-                Console.WriteLine($"Exception: {text} error: {error}");
+                OnLog?.Invoke($"Ausnahme bei \"{text}\": {error.Message}");
             }
             finally
             {
@@ -70,62 +72,67 @@ namespace TranslateCSV
             return null;
         }
 
-        private async Task<string> TranslateCall(string text)
+        private async Task<string?> TranslateCall(string text, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(text) || Interlocked.Increment(ref translationsCounter) > LimitTranslations) return null;
             if (AlreadyTranslated.TryGetValue(text, out var alreadyTranslated)) return alreadyTranslated;
 
             var protect = new ProtectSpecials { ProtectWords = ProtectWords, Glossar = Glossar };
-
-            var protecedText = protect.Protect(text);
+            var protectedText = protect.Protect(text);
             var startText = 0;
-            string completeTranslatedText = null;
+            string? completeTranslatedText = null;
 
-            while (true)    
+            while (true)
             {
-                var endText   = protecedText.Length > (startText + 1000) ? Math.Max(startText + 1000, protecedText.IndexOf('.', startText + 1000) + 1) : protecedText.Length;
+                var endText = protectedText.Length > (startText + 1000)
+                    ? Math.Max(startText + 1000, protectedText.IndexOf('.', startText + 1000) + 1)
+                    : protectedText.Length;
 
-                var @params = new Dictionary<string, string>() {
-                    { "auth_key",       ApiKey },
-                    { "source_lang",    SourceLanguage },
-                    { "target_lang",    TargetLanguage },
-                    { "tag_handling",   "xml" },
-                    { "ignore_tags",    "x" },
-                    { "text",            protecedText.Substring(startText, endText - startText)}
-                };
+                var queryString = string.Join("&", new Dictionary<string, string>
+                {
+                    ["auth_key"]     = ApiKey,
+                    ["source_lang"]  = SourceLanguage,
+                    ["target_lang"]  = TargetLanguage,
+                    ["tag_handling"] = "xml",
+                    ["ignore_tags"]  = "x",
+                    ["text"]         = protectedText.Substring(startText, endText - startText)
+                }.Select(kv => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
 
                 startText = endText;
 
-                var response = await DeepLHttpClient.Value.GetAsync(new Uri(DeepLHttpClient.Value.BaseAddress, QueryHelpers.AddQueryString("v2/translate", @params)));
-                var responseContent = await response.Content.ReadAsStringAsync();
+                var response = await DeepLHttpClient!.Value.GetAsync($"v2/translate?{queryString}", cancellationToken);
+                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
                 if (response.IsSuccessStatusCode)
                 {
                     try
                     {
-                        var jsonResonse = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
-                        var translatedText = protect.Restore(((JsonElement)jsonResonse["translations"])[0].GetProperty("text").GetString());
+                        var jsonResponse = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+                        var translatedText = protect.Restore(
+                            ((JsonElement)jsonResponse!["translations"])[0].GetProperty("text").GetString()!);
 
-                        if (completeTranslatedText == null) completeTranslatedText = translatedText;
-                        else                                completeTranslatedText += " " + translatedText;
+                        completeTranslatedText = completeTranslatedText == null
+                            ? translatedText
+                            : completeTranslatedText + " " + translatedText;
 
-                        if (endText == protecedText.Length)
+                        if (endText == protectedText.Length)
                         {
                             AlreadyTranslated.TryAdd(text, completeTranslatedText);
-
                             return completeTranslatedText;
                         }
                     }
                     catch (Exception error)
                     {
-                        Console.WriteLine($"Translate '{text}' error {response.StatusCode}: {responseContent} -> {error}");
+                        OnLog?.Invoke($"Fehler beim Übersetzen von \"{text}\": {response.StatusCode}: {responseContent} → {error.Message}");
                         return null;
                     }
                 }
-                else { Console.WriteLine($"Translate '{text}' error {response.StatusCode}: {responseContent}"); return null; }
+                else
+                {
+                    OnLog?.Invoke($"API-Fehler für \"{text}\": {response.StatusCode}: {responseContent}");
+                    return null;
+                }
             }
-
-            
         }
     }
 }

@@ -10,6 +10,7 @@ namespace TranslateCSV
                 this IEnumerable<TElement> source,
                 Func<TElement, TKey> keyGetter,
                 Func<TElement, TValue> valueGetter)
+                where TKey : notnull
         {
             IDictionary<TKey, TValue> dict = new Dictionary<TKey, TValue>();
             foreach (var e in source)

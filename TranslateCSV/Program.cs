@@ -1,4 +1,3 @@
-﻿using CommandLine;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,144 +10,155 @@ using System.Threading.Tasks;
 
 namespace TranslateCSV
 {
-    partial class Program
+    public class TranslationService
     {
-        private static int Counter;
+        private int _counter;
 
-        static void Main(string[] args) => Parser.Default.ParseArguments<Options>(args).WithParsed(Translate);
+        public event Action<string>? Log;
+        public event Action<int>? Progress;
 
-        private static void Translate(Options options)
+        private void OnLog(string msg) => Log?.Invoke(msg);
+
+        public async Task<bool> TranslateAsync(AppSettings options, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrEmpty(options.DeepLAuthKey) && options.LimitTranslations > 0)
+            if (string.IsNullOrEmpty(options.DeepLAuthKey))
             {
-                Console.Write($"DeepL REST API {(options.DeepLFreeAuthKey ? "FREE" : "PRO")} auth key:");
-                options.DeepLAuthKey = Console.ReadLine();
-
-                if (string.IsNullOrEmpty(options.DeepLAuthKey)) return;
+                OnLog("❌ Kein API-Schlüssel angegeben.");
+                return false;
             }
 
-            var translations = TranslationIO.ReadTranslationFromCsv(options.CsvFile);
-
-            Console.WriteLine($"Found {translations.Count} entries total (with headline)");
-            var targetTranslateIndex = translations[0].FindIndex(f => f.Equals(options.CsvTargetLanguage, StringComparison.InvariantCultureIgnoreCase));
-            if (targetTranslateIndex == -1)
+            List<List<string>> translations;
+            try
             {
-                Console.WriteLine($"Not found translation col for \"{options.CsvTargetLanguage}\"");
-                return;
+                translations = TranslationIO.ReadTranslationFromCsv(options.CsvFile);
             }
-            Console.WriteLine($"Found translation col for \"{options.CsvTargetLanguage}\" at {targetTranslateIndex}");
-
-            var sourceTranslateIndex = translations[0].FindIndex(f => f.Equals(options.CsvSourceLanguage, StringComparison.InvariantCultureIgnoreCase));
-            if (sourceTranslateIndex == -1)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Not found source translation col for \"{options.CsvSourceLanguage}\"");
-                return;
+                OnLog($"❌ Fehler beim Lesen der CSV-Datei: {ex.Message}");
+                return false;
             }
-            Console.WriteLine($"Found source translation col for \"{options.CsvSourceLanguage}\" at {sourceTranslateIndex}");
 
-            var translationsRef = string.IsNullOrEmpty(options.CsvRefFile) || !File.Exists(options.CsvRefFile)
+            OnLog($"📄 {translations.Count} Einträge geladen (inkl. Kopfzeile)");
+
+            var targetIndex = translations[0].FindIndex(f => f.Equals(options.CsvTargetLanguage, StringComparison.InvariantCultureIgnoreCase));
+            if (targetIndex == -1) { OnLog($"❌ Zielspalte \"{options.CsvTargetLanguage}\" nicht gefunden."); return false; }
+            OnLog($"✔ Zielspalte \"{options.CsvTargetLanguage}\" → Spalte {targetIndex}");
+
+            var sourceIndex = translations[0].FindIndex(f => f.Equals(options.CsvSourceLanguage, StringComparison.InvariantCultureIgnoreCase));
+            if (sourceIndex == -1) { OnLog($"❌ Quellspalte \"{options.CsvSourceLanguage}\" nicht gefunden."); return false; }
+            OnLog($"✔ Quellspalte \"{options.CsvSourceLanguage}\" → Spalte {sourceIndex}");
+
+            var refData = string.IsNullOrEmpty(options.CsvRefFile) || !File.Exists(options.CsvRefFile)
                 ? null
                 : TranslationIO.ReadTranslationFromCsv(options.CsvRefFile).ToDictionaryUnique(t => t[0], t => t);
 
-            int countTranslations = translations.Count(t =>
+            int limit = options.LimitTranslations <= 0 ? int.MaxValue : options.LimitTranslations;
+
+            int toTranslate = translations.Count(t =>
                 options.NewTranslate ||
-                string.IsNullOrWhiteSpace(t[targetTranslateIndex]) ||
-                (translationsRef != null && translationsRef.TryGetValue(t[0], out var refData) && refData[sourceTranslateIndex] != t[sourceTranslateIndex])
-            );
-            Console.Write($"Start {(options.NewTranslate ? "new " : "")}translation for {Math.Min(options.LimitTranslations, countTranslations)} entries (y/n)? ");
+                string.IsNullOrWhiteSpace(t[targetIndex]) ||
+                (refData != null && refData.TryGetValue(t[0], out var r) && r[sourceIndex] != t[sourceIndex]));
 
-            if (Console.ReadKey().KeyChar != 'y')
-            {
-                Console.WriteLine();
-                Console.WriteLine("cancled.");
-                return;
-            }
-            Console.WriteLine();
+            OnLog($"🔄 Starte Übersetzung von {Math.Min(limit, toTranslate)} Einträgen...");
 
-            var deepLTranslate = new DeepLTranslate(options.MaxParallelDeepLCalls)
+            using var deepL = new DeepLTranslate(options.MaxParallelDeepLCalls)
             {
-                ApiKey              = options.DeepLAuthKey,
-                IsFreeApiKey        = options.DeepLFreeAuthKey,
-                SourceLanguage      = "EN",
-                TargetLanguage      = options.DeepLTargetLanguage,
-                LimitTranslations   = options.LimitTranslations,
+                ApiKey           = options.DeepLAuthKey,
+                IsFreeApiKey     = options.DeepLFreeAuthKey,
+                SourceLanguage   = "EN",
+                TargetLanguage   = options.DeepLTargetLanguage,
+                LimitTranslations = limit,
             };
+            deepL.OnLog += OnLog;
 
-            ReadProtectWords(options, deepLTranslate);
-            ReadGlossar     (options, targetTranslateIndex, sourceTranslateIndex, deepLTranslate);
+            ReadProtectWords(options, deepL);
+            ReadGlossar(options, targetIndex, sourceIndex, deepL);
 
-            Counter = 0;
+            _counter = 0;
+            CopyDuplicates(translations, sourceIndex, targetIndex);
 
-            CopyDuplicates(translations, sourceTranslateIndex, targetTranslateIndex);
+            var tasks = translations
+                .Where(t => options.NewTranslate || string.IsNullOrWhiteSpace(t[targetIndex]))
+                .Select(t => TranslateEntry(t, sourceIndex, targetIndex, deepL,
+                    refData != null && refData.TryGetValue(t[0], out var r) ? r : null,
+                    cancellationToken))
+                .ToArray();
 
-            Task.WaitAll(translations
-                .Where(t => options.NewTranslate || string.IsNullOrWhiteSpace(t[targetTranslateIndex]))
-                .Select(t => TranslateText(t, sourceTranslateIndex, targetTranslateIndex, deepLTranslate,
-                        translationsRef != null && translationsRef.TryGetValue(t[0], out var refTranslation) ? refTranslation : null))
-                .ToArray());
+            await Task.WhenAll(tasks);
 
-            Console.WriteLine($"{Counter}");
+            OnLog($"✅ {_counter} Einträge übersetzt.");
 
-            Console.WriteLine($"write output to \"{options.CsvOutputFile ?? options.CsvFile}\"");
-            TranslationIO.WriteTranslationToCsv(translations, options.CsvOutputFile ?? options.CsvFile);
+            var outputFile = string.IsNullOrEmpty(options.CsvOutputFile) ? options.CsvFile : options.CsvOutputFile;
+            OnLog($"💾 Schreibe Ergebnis nach \"{outputFile}\" ...");
+            TranslationIO.WriteTranslationToCsv(translations, outputFile);
+            OnLog("🎉 Fertig!");
+            return true;
         }
 
-        private static void ReadGlossar(Options options, int targetTranslateIndex, int sourceTranslateIndex, DeepLTranslate deepLTranslate)
+        private void ReadGlossar(AppSettings options, int targetIndex, int sourceIndex, DeepLTranslate deepL)
         {
             if (string.IsNullOrEmpty(options.GlossarFile)) return;
-            
-            var glossar = TranslationIO.ReadTranslationFromCsv(File.Exists(options.GlossarFile)
-                                            ? options.GlossarFile
-                                            : Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), options.GlossarFile));
-            deepLTranslate.Glossar = glossar
-                .Where(g => !string.IsNullOrWhiteSpace(g[sourceTranslateIndex]))
-                .ToDictionary(g => new Regex($"(?'replace'{g[sourceTranslateIndex]?.Replace(" ", "\\s")})[\\W]"), g => g[targetTranslateIndex]);
+            var path = ResolveFile(options.GlossarFile);
+            if (path == null) { OnLog($"ℹ Glossar-Datei nicht gefunden: {options.GlossarFile}"); return; }
+
+            var glossar = TranslationIO.ReadTranslationFromCsv(path);
+            deepL.Glossar = glossar
+                .Where(g => !string.IsNullOrWhiteSpace(g[sourceIndex]))
+                .ToDictionary(
+                    g => new Regex($"(?'replace'{Regex.Escape(g[sourceIndex]!).Replace("\\ ", "\\s")})[\\W]"),
+                    g => g[targetIndex]);
+            OnLog($"📖 Glossar geladen: {deepL.Glossar.Count} Einträge");
         }
 
-        private static void ReadProtectWords(Options options, DeepLTranslate deepLTranslate)
+        private void ReadProtectWords(AppSettings options, DeepLTranslate deepL)
         {
             if (string.IsNullOrEmpty(options.KeepSpecialWordListFile)) return;
-            
-            deepLTranslate.ProtectWords = File.ReadAllLines(File.Exists(options.KeepSpecialWordListFile)
-                                            ? options.KeepSpecialWordListFile
-                                            : Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), options.KeepSpecialWordListFile))
-                                            .Where(t => !string.IsNullOrWhiteSpace(t))
-                                            .Select(t => new Regex(t))
-                                            .ToArray();
+            var path = ResolveFile(options.KeepSpecialWordListFile);
+            if (path == null) { OnLog($"ℹ Schutzwort-Datei nicht gefunden: {options.KeepSpecialWordListFile}"); return; }
+
+            deepL.ProtectWords = File.ReadAllLines(path)
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Select(t => new Regex(t))
+                .ToArray();
+            OnLog($"🛡 Schutzwörter geladen: {deepL.ProtectWords.Length} Muster");
         }
 
-        private static void CopyDuplicates(List<List<string>> translations, int sourceTranslateIndex, int targetTranslateIndex)
+        private static string? ResolveFile(string path)
         {
-            var check = new ConcurrentDictionary<string, string>();
-
-            Task.WaitAll(translations
-                .Select(t => Task.Run(() =>
-                    {
-                        if (check.TryGetValue(t[sourceTranslateIndex], out var translatedText)) t[targetTranslateIndex] = translatedText;
-                        else check.TryAdd(t[sourceTranslateIndex], t[targetTranslateIndex]);
-                    })
-                )
-                .ToArray());
+            if (File.Exists(path)) return path;
+            var next = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, path);
+            return File.Exists(next) ? next : null;
         }
 
-        private static async Task TranslateText(List<string> textEntries, int sourceTranslateIndex, int targetTranslateIndex, DeepLTranslate deepLTranslate, List<string> refTranslation)
+        private static void CopyDuplicates(List<List<string>> translations, int sourceIndex, int targetIndex)
         {
-            string sourceText = textEntries[sourceTranslateIndex];
-
-            if (refTranslation != null                              && 
-                refTranslation[sourceTranslateIndex] == sourceText  && 
-                !string.IsNullOrEmpty(refTranslation[targetTranslateIndex]))
+            var seen = new ConcurrentDictionary<string, string>();
+            foreach (var t in translations)
             {
-                textEntries[targetTranslateIndex] = refTranslation[targetTranslateIndex];
+                if (seen.TryGetValue(t[sourceIndex], out var existing)) t[targetIndex] = existing;
+                else seen.TryAdd(t[sourceIndex], t[targetIndex]);
+            }
+        }
+
+        private async Task TranslateEntry(List<string> entry, int sourceIndex, int targetIndex,
+            DeepLTranslate deepL, List<string>? refEntry, CancellationToken ct)
+        {
+            if (ct.IsCancellationRequested) return;
+
+            if (refEntry != null &&
+                refEntry[sourceIndex] == entry[sourceIndex] &&
+                !string.IsNullOrEmpty(refEntry[targetIndex]))
+            {
+                entry[targetIndex] = refEntry[targetIndex];
                 return;
             }
 
-            var result = await deepLTranslate.Translate(sourceText);
+            var result = await deepL.Translate(entry[sourceIndex], ct);
             if (result == null) return;
 
-            textEntries[targetTranslateIndex] = result.Replace('\"', '\'');     // " und damit "" wird vom Spiel nicht korrekt verarbeitet
-            Interlocked.Increment(ref Counter);
-            Console.Write($"{Counter}\r");
+            entry[targetIndex] = result.Replace('"', '\'');
+            Progress?.Invoke(Interlocked.Increment(ref _counter));
         }
     }
 }
+
