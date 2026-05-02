@@ -64,10 +64,16 @@ Der kostenlose Account reicht für normale Szenarien gut aus – aber Vorsicht: 
 
 Viele Empyrion-Konfigurationsdateien liegen als `.ecf`-Dateien vor (z. B. `TokenConfig.ecf`, `TraderNPCConfig.ecf`). Diese müssen zuerst in das CSV-Format umgewandelt werden. Dafür steht das Programm **ECFtoCSV** zur Verfügung.
 
-**Beispieldateien:**
+Die ECF-Dateien befinden sich im **Szenarioverzeichnis** – bei Servern üblicherweise im Empyrion-Installationsverzeichnis unter `Content\Scenarios\<Szenarioname>\`. Bei einer lokalen Steam-Workshop-Installation liegt das Verzeichnis typischerweise unter:
+
 ```
-C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuration\TokenConfig.ecf
-C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuration\TraderNPCConfig.ecf
+C:\GAMES\Steam\steamapps\workshop\content\383120\<Workshop-ID>\
+```
+
+**Beispieldateien** (Pfad exemplarisch):
+```
+...\Content\Configuration\TokenConfig.ecf
+...\Content\Configuration\TraderNPCConfig.ecf
 ```
 
 **Workflow:**
@@ -158,10 +164,16 @@ The free account is sufficient for most scenarios – but be careful: the monthl
 
 Many Empyrion configuration files are stored as `.ecf` files (e.g. `TokenConfig.ecf`, `TraderNPCConfig.ecf`). These must first be converted to CSV format. The **ECFtoCSV** program is available for this purpose.
 
-**Example files:**
+The ECF files are located in the **scenario directory** – on servers this is typically inside the Empyrion installation folder under `Content\Scenarios\<ScenarioName>\`. On a local Steam Workshop installation the path is usually:
+
 ```
-C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuration\TokenConfig.ecf
-C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuration\TraderNPCConfig.ecf
+C:\GAMES\Steam\steamapps\workshop\content\383120\<Workshop-ID>\
+```
+
+**Example files** (path shown as example):
+```
+...\Content\Configuration\TokenConfig.ecf
+...\Content\Configuration\TraderNPCConfig.ecf
 ```
 
 **Workflow:**
@@ -252,10 +264,16 @@ Le compte gratuit est suffisant pour la plupart des scénarios – mais attentio
 
 De nombreux fichiers de configuration d'Empyrion sont stockés sous forme de fichiers `.ecf` (p. ex. `TokenConfig.ecf`, `TraderNPCConfig.ecf`). Ceux-ci doivent d'abord être convertis au format CSV. Le programme **ECFtoCSV** est disponible à cet effet.
 
-**Fichiers d'exemple :**
+Les fichiers ECF se trouvent dans le **répertoire du scénario** – sur les serveurs, il se trouve généralement dans le dossier d'installation d'Empyrion sous `Content\Scenarios\<NomDuScénario>\`. Pour une installation locale via Steam Workshop, le chemin est typiquement :
+
 ```
-C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuration\TokenConfig.ecf
-C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuration\TraderNPCConfig.ecf
+C:\GAMES\Steam\steamapps\workshop\content\383120\<Workshop-ID>\
+```
+
+**Fichiers d'exemple** (chemin donné à titre indicatif) :
+```
+...\Content\Configuration\TokenConfig.ecf
+...\Content\Configuration\TraderNPCConfig.ecf
 ```
 
 **Flux de travail :**
