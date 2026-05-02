@@ -33,6 +33,10 @@ namespace TranslateCSV
 
         // ── Lokalisierung ─────────────────────────────────────────────────
 
+        private static readonly string AppVersion =
+            System.Reflection.Assembly.GetExecutingAssembly()
+                  .GetName().Version?.ToString(3) ?? "2.0.0";
+
         private string L(string key) => Localization.Get(key);
 
         private void InitLanguageBox()
@@ -66,7 +70,7 @@ namespace TranslateCSV
 
         private void ApplyLanguage()
         {
-            Title = L("WindowTitle");
+            Title = $"{L("WindowTitle")} v{AppVersion}";
 
             LangLabelText.Text = L("LangLabel");
 
