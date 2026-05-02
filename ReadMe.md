@@ -88,7 +88,14 @@ C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuratio
 
 ### 📦 Installation
 
-Keine Installation notwendig. Einfach die bereitgestellte `TranslateCSV.exe` (Standalone-Version) herunterladen und starten. .NET muss **nicht** installiert sein.
+Keine Installation notwendig – einfach die ZIP herunterladen, entpacken und starten:
+
+1. Öffne den **[Releases-Bereich](../../releases/latest)** dieses Repositories (rechte Seitenleiste auf GitHub → „Releases")
+2. Lade unter der neuesten Version die Datei **`TranslateCSV.zip`** herunter
+3. Entpacke die ZIP in einen beliebigen Ordner
+4. Starte **`TranslateCSV.exe`**
+
+> **.NET muss nicht installiert sein** – das Programm ist vollständig eigenständig (Standalone-EXE).
 
 ---
 ---
@@ -175,7 +182,14 @@ C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuratio
 
 ### 📦 Installation
 
-No installation required. Simply download the provided `TranslateCSV.exe` (standalone version) and run it. .NET does **not** need to be installed.
+No installation required – simply download the ZIP, extract it and run:
+
+1. Open the **[Releases section](../../releases/latest)** of this repository (right sidebar on GitHub → "Releases")
+2. Under the latest release, download **`TranslateCSV.zip`**
+3. Extract the ZIP to any folder
+4. Run **`TranslateCSV.exe`**
+
+> **.NET does not need to be installed** – the program is fully self-contained (standalone EXE).
 
 ---
 ---
@@ -262,4 +276,11 @@ C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuratio
 
 ### 📦 Installation
 
-Aucune installation requise. Téléchargez simplement le fichier `TranslateCSV.exe` fourni (version autonome) et lancez-le. .NET n'a **pas** besoin d'être installé.
+Aucune installation requise – téléchargez simplement le ZIP, extrayez-le et lancez :
+
+1. Ouvrez la section **[Releases](../../releases/latest)** de ce dépôt (barre latérale droite sur GitHub → « Releases »)
+2. Sous la dernière version, téléchargez **`TranslateCSV.zip`**
+3. Extrayez le ZIP dans n'importe quel dossier
+4. Lancez **`TranslateCSV.exe`**
+
+> **.NET n'a pas besoin d'être installé** – le programme est entièrement autonome (EXE standalone).
