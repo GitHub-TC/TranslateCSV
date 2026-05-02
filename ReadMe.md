@@ -16,6 +16,19 @@ Das Programm übersetzt die Textinhalte einer bestimmten Spalte in einer CSV-Dat
 
 ---
 
+### 📦 Installation
+
+Keine Installation notwendig – einfach die ZIP herunterladen, entpacken und starten:
+
+1. Öffne den **[Releases-Bereich](../../releases/latest)** dieses Repositories (rechte Seitenleiste auf GitHub → „Releases")
+2. Lade unter der neuesten Version die Datei **`TranslateCSV.zip`** herunter
+3. Entpacke die ZIP in einen beliebigen Ordner
+4. Starte **`TranslateCSV.exe`**
+
+> **.NET muss nicht installiert sein** – das Programm ist vollständig eigenständig (Standalone-EXE).
+
+---
+
 ### ⚠️ Wichtig: Übersetzungslimit beim Programmstart
 
 > **Das Programm startet IMMER mit einem Limit von 5 Übersetzungen** (Einstellung „Max. Übersetzungen" im Tab „Erweitert").
@@ -85,19 +98,6 @@ C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuratio
 4. **▶ Übersetzung starten** – das Protokollfenster zeigt den Fortschritt in Echtzeit
 
 ---
-
-### 📦 Installation
-
-Keine Installation notwendig – einfach die ZIP herunterladen, entpacken und starten:
-
-1. Öffne den **[Releases-Bereich](../../releases/latest)** dieses Repositories (rechte Seitenleiste auf GitHub → „Releases")
-2. Lade unter der neuesten Version die Datei **`TranslateCSV.zip`** herunter
-3. Entpacke die ZIP in einen beliebigen Ordner
-4. Starte **`TranslateCSV.exe`**
-
-> **.NET muss nicht installiert sein** – das Programm ist vollständig eigenständig (Standalone-EXE).
-
----
 ---
 
 ## English
@@ -107,6 +107,19 @@ Keine Installation notwendig – einfach die ZIP herunterladen, entpacken und st
 **TranslateCSV** is a Windows application with a graphical interface for translating CSV files from the game **Empyrion – Galactic Survival** (or any other scenario) using the [DeepL API](https://www.deepl.com/translator).
 
 The program automatically translates the text content of a specific column in a CSV file and writes the translations back into the target column.
+
+---
+
+### 📦 Installation
+
+No installation required – simply download the ZIP, extract it and run:
+
+1. Open the **[Releases section](../../releases/latest)** of this repository (right sidebar on GitHub → "Releases")
+2. Under the latest release, download **`TranslateCSV.zip`**
+3. Extract the ZIP to any folder
+4. Run **`TranslateCSV.exe`**
+
+> **.NET does not need to be installed** – the program is fully self-contained (standalone EXE).
 
 ---
 
@@ -179,19 +192,6 @@ C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuratio
 4. **▶ Start Translation** – the log window shows progress in real time
 
 ---
-
-### 📦 Installation
-
-No installation required – simply download the ZIP, extract it and run:
-
-1. Open the **[Releases section](../../releases/latest)** of this repository (right sidebar on GitHub → "Releases")
-2. Under the latest release, download **`TranslateCSV.zip`**
-3. Extract the ZIP to any folder
-4. Run **`TranslateCSV.exe`**
-
-> **.NET does not need to be installed** – the program is fully self-contained (standalone EXE).
-
----
 ---
 
 ## Français
@@ -201,6 +201,19 @@ No installation required – simply download the ZIP, extract it and run:
 **TranslateCSV** est une application Windows avec interface graphique pour traduire les fichiers CSV du jeu **Empyrion – Galactic Survival** (ou de tout autre scénario) en utilisant l'[API DeepL](https://www.deepl.com/translator).
 
 Le programme traduit automatiquement le contenu textuel d'une colonne spécifique d'un fichier CSV et réécrit les traductions dans la colonne cible.
+
+---
+
+### 📦 Installation
+
+Aucune installation requise – téléchargez simplement le ZIP, extrayez-le et lancez :
+
+1. Ouvrez la section **[Releases](../../releases/latest)** de ce dépôt (barre latérale droite sur GitHub → « Releases »)
+2. Sous la dernière version, téléchargez **`TranslateCSV.zip`**
+3. Extrayez le ZIP dans n'importe quel dossier
+4. Lancez **`TranslateCSV.exe`**
+
+> **.NET n'a pas besoin d'être installé** – le programme est entièrement autonome (EXE standalone).
 
 ---
 
@@ -271,16 +284,3 @@ C:\GAMES\Steam\steamapps\workshop\content\383120\3143225812\Content\Configuratio
    - Appels API parallèles : par défaut 8, augmenter pour une traduction plus rapide des grands fichiers
 
 4. **▶ Démarrer la traduction** – la fenêtre de journal affiche la progression en temps réel
-
----
-
-### 📦 Installation
-
-Aucune installation requise – téléchargez simplement le ZIP, extrayez-le et lancez :
-
-1. Ouvrez la section **[Releases](../../releases/latest)** de ce dépôt (barre latérale droite sur GitHub → « Releases »)
-2. Sous la dernière version, téléchargez **`TranslateCSV.zip`**
-3. Extrayez le ZIP dans n'importe quel dossier
-4. Lancez **`TranslateCSV.exe`**
-
-> **.NET n'a pas besoin d'être installé** – le programme est entièrement autonome (EXE standalone).
