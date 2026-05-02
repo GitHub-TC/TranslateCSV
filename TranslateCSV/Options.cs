@@ -26,6 +26,8 @@ namespace TranslateCSV
         public double WindowLeft { get; set; } = double.NaN;
         public double WindowTop { get; set; } = double.NaN;
 
+        public string UILanguage { get; set; } = "de";
+
         [JsonIgnore]
         private static readonly string SettingsPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
