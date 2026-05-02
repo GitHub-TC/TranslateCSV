@@ -49,13 +49,7 @@ Der kostenlose Account reicht für normale Szenarien gut aus – aber Vorsicht: 
 
 ### 📄 ECF-Dateien zu CSV konvertieren
 
-Viele Empyrion-Konfigurationsdateien liegen als `.ecf`-Dateien vor (z. B. `TokenConfig.ecf`, `TraderNPCConfig.ecf`). Diese müssen zuerst in das CSV-Format umgewandelt werden.
-
-Dafür steht das Hilfsprogramm **ECFtoCSV** zur Verfügung:
-
-```
-Z:\Projekte\C#\Empyrion\ECFtoCSV
-```
+Viele Empyrion-Konfigurationsdateien liegen als `.ecf`-Dateien vor (z. B. `TokenConfig.ecf`, `TraderNPCConfig.ecf`). Diese müssen zuerst in das CSV-Format umgewandelt werden. Dafür steht das Programm **ECFtoCSV** zur Verfügung.
 
 **Beispieldateien:**
 ```
@@ -142,13 +136,7 @@ The free account is sufficient for most scenarios – but be careful: the monthl
 
 ### 📄 Converting ECF files to CSV
 
-Many Empyrion configuration files are stored as `.ecf` files (e.g. `TokenConfig.ecf`, `TraderNPCConfig.ecf`). These must first be converted to CSV format.
-
-The **ECFtoCSV** utility is available for this purpose:
-
-```
-Z:\Projekte\C#\Empyrion\ECFtoCSV
-```
+Many Empyrion configuration files are stored as `.ecf` files (e.g. `TokenConfig.ecf`, `TraderNPCConfig.ecf`). These must first be converted to CSV format. The **ECFtoCSV** program is available for this purpose.
 
 **Example files:**
 ```
@@ -235,13 +223,7 @@ Le compte gratuit est suffisant pour la plupart des scénarios – mais attentio
 
 ### 📄 Conversion des fichiers ECF en CSV
 
-De nombreux fichiers de configuration d'Empyrion sont stockés sous forme de fichiers `.ecf` (p. ex. `TokenConfig.ecf`, `TraderNPCConfig.ecf`). Ceux-ci doivent d'abord être convertis au format CSV.
-
-L'utilitaire **ECFtoCSV** est disponible à cet effet :
-
-```
-Z:\Projekte\C#\Empyrion\ECFtoCSV
-```
+De nombreux fichiers de configuration d'Empyrion sont stockés sous forme de fichiers `.ecf` (p. ex. `TokenConfig.ecf`, `TraderNPCConfig.ecf`). Ceux-ci doivent d'abord être convertis au format CSV. Le programme **ECFtoCSV** est disponible à cet effet.
 
 **Fichiers d'exemple :**
 ```
