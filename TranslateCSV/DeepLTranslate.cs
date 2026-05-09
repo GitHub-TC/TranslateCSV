@@ -99,12 +99,22 @@ namespace TranslateCSV
 
                 startText = endText;
 
-                var request = new HttpRequestMessage(HttpMethod.Post, "v2/translate");
-                request.Headers.Add("Authorization", $"DeepL-Auth-Key {ApiKey}");
-                request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+                HttpResponseMessage response;
+                string responseContent;
+                while (true)
+                {
+                    var req = new HttpRequestMessage(HttpMethod.Post, "v2/translate");
+                    req.Headers.Add("Authorization", $"DeepL-Auth-Key {ApiKey}");
+                    req.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+                    response = await DeepLHttpClient!.Value.SendAsync(req, cancellationToken);
+                    responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
-                var response = await DeepLHttpClient!.Value.SendAsync(request, cancellationToken);
-                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                    if ((int)response.StatusCode != 429) break;
+
+                    var retryAfter = response.Headers.RetryAfter?.Delta ?? TimeSpan.FromSeconds(5);
+                    OnLog?.Invoke($"Rate limit erreicht, warte {retryAfter.TotalSeconds:0}s …");
+                    await Task.Delay(retryAfter, cancellationToken);
+                }
 
                 if (response.IsSuccessStatusCode)
                 {

@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
+		<ApplicationIcon>app.ico</ApplicationIcon>
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net10.0-windows</TargetFramework>
 		<UseWPF>true</UseWPF>
@@ -32,9 +33,11 @@
 	<ItemGroup>
 		<None Remove="GlossarWords.csv" />
 		<None Remove="ProtectWords.txt" />
+		<None Remove="app.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<Resource Include="app.ico" />
 		<Content Include="GlossarWords.csv">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>

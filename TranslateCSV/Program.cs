@@ -84,13 +84,28 @@ namespace TranslateCSV
                     cancellationToken))
                 .ToArray();
 
-            await Task.WhenAll(tasks);
+            bool cancelled = false;
+            try
+            {
+                await Task.WhenAll(tasks);
+            }
+            catch (OperationCanceledException)
+            {
+                cancelled = true;
+            }
 
             OnLog($"✅ {_counter} Einträge übersetzt.");
 
             var outputFile = string.IsNullOrEmpty(options.CsvOutputFile) ? options.CsvFile : options.CsvOutputFile;
             OnLog($"💾 Schreibe Ergebnis nach \"{outputFile}\" ...");
             TranslationIO.WriteTranslationToCsv(translations, outputFile);
+
+            if (cancelled)
+            {
+                OnLog("⚠️ Abgebrochen – bisherige Ergebnisse wurden gespeichert.");
+                throw new OperationCanceledException(cancellationToken);
+            }
+
             OnLog("🎉 Fertig!");
             return true;
         }

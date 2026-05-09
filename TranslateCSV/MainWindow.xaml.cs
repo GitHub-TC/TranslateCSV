@@ -346,11 +346,31 @@ namespace TranslateCSV
         {
             ProgressBar.IsIndeterminate = false;
             StatusText.Text = $"{count} ✓";
+            StatusText.Foreground = System.Windows.Media.Brushes.Green;
         }
+
+        private bool _inRateLimit;
 
         private void AppendLog(string message)
         {
-            LogBox.AppendText(message + "\n");
+            if (message.StartsWith("Rate limit"))
+            {
+                if (_inRateLimit)
+                {
+                    if (LogBox.Text.EndsWith("\n"))
+                        LogBox.Text = LogBox.Text[..^1] + ".\n";
+                }
+                else
+                {
+                    LogBox.AppendText(message + "\n");
+                    _inRateLimit = true;
+                }
+            }
+            else
+            {
+                _inRateLimit = false;
+                LogBox.AppendText(message + "\n");
+            }
             LogBox.ScrollToEnd();
         }
     }
