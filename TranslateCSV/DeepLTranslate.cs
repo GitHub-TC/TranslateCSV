@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -88,19 +88,22 @@ namespace TranslateCSV
                     ? Math.Max(startText + 1000, protectedText.IndexOf('.', startText + 1000) + 1)
                     : protectedText.Length;
 
-                var queryString = string.Join("&", new Dictionary<string, string>
+                var requestBody = JsonSerializer.Serialize(new Dictionary<string, object>
                 {
-                    ["auth_key"]     = ApiKey,
+                    ["text"]         = new[] { protectedText.Substring(startText, endText - startText) },
                     ["source_lang"]  = SourceLanguage,
                     ["target_lang"]  = TargetLanguage,
                     ["tag_handling"] = "xml",
-                    ["ignore_tags"]  = "x",
-                    ["text"]         = protectedText.Substring(startText, endText - startText)
-                }.Select(kv => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
+                    ["ignore_tags"]  = new[] { "x" }
+                });
 
                 startText = endText;
 
-                var response = await DeepLHttpClient!.Value.GetAsync($"v2/translate?{queryString}", cancellationToken);
+                var request = new HttpRequestMessage(HttpMethod.Post, "v2/translate");
+                request.Headers.Add("Authorization", $"DeepL-Auth-Key {ApiKey}");
+                request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+
+                var response = await DeepLHttpClient!.Value.SendAsync(request, cancellationToken);
                 var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
                 if (response.IsSuccessStatusCode)
